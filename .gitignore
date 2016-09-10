@@ -1,0 +1,11 @@
+/.apt_generated/
+/target/
+/.idea/
+/TempWorkingDir/
+/log.txt*
+/.classpath
+/.factorypath
+/.project
+/.springBeans
+/.settings/
+/bin/
