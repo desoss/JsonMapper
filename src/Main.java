@@ -22,6 +22,18 @@ public class Main {
 	private static final String FILE_INPUT_DIR = "#@INPUTFOLDERPATH@#";
 
 	private static final String FILE_TEXT_EXT = ".json";
+
+	/*
+	 * Precondition: input.json in the old format are of public case
+	 * 
+	 * If SINGLEINPUT_MULTIOUTPUT = true, private and public json in the new
+	 * format are created in the same parent directory of FILE_INPUT_DIR
+	 */
+	private static final boolean SINGLEINPUT_MULTIOUTPUT = false;
+	/*
+	 * Clearly if SINGLEINPUT_MULTIOUTPUT is set to true FILE_OUTPUT_DIR is
+	 * unnecessary
+	 */
 	private static final String FILE_OUTPUT_DIR = "#@OUTPUTFOLDERPATH@#";
 
 	/*
@@ -47,13 +59,19 @@ public class Main {
 	public static void main(String[] args) {
 		Main findExt = new Main();
 		checkInputs();
-		findExt.listFile(FILE_INPUT_DIR, FILE_TEXT_EXT);
+
 		if (PRETTIFY_JSON) {
 			mapper.enable(SerializationFeature.INDENT_OUTPUT);
 		}
 
+		findExt.listFile(FILE_INPUT_DIR, FILE_TEXT_EXT);
+
 		try {
-			findExt.convertJSONs(ADD_ML_FEATURES, FILE_ML_DIR);
+			if (SINGLEINPUT_MULTIOUTPUT) {
+				findExt.multiConversion(ADD_ML_FEATURES, FILE_ML_DIR);
+			} else {
+				findExt.convertJSONs(ADD_ML_FEATURES, FILE_ML_DIR, FILE_OUTPUT_DIR, CONVERT_TO_PRIVATE);
+			}
 		} catch (IOException e) {
 			System.out.println("Error with JSONs serialization!");
 		}
@@ -64,17 +82,16 @@ public class Main {
 			System.out.println("Directory does not exists : " + FILE_INPUT_DIR);
 			System.exit(0);
 		}
-
-		if (new File(FILE_OUTPUT_DIR).isDirectory() == false) {
-			System.out.println("Directory does not exists : " + FILE_OUTPUT_DIR);
-			System.exit(0);
-			;
+		if (!SINGLEINPUT_MULTIOUTPUT) {
+			if (new File(FILE_OUTPUT_DIR).isDirectory() == false) {
+				System.out.println("Directory does not exists : " + FILE_OUTPUT_DIR);
+				System.exit(0);
+			}
 		}
 		if (ADD_ML_FEATURES) {
 			if (new File(FILE_ML_DIR).isDirectory() == false) {
 				System.out.println("Directory does not exists : " + FILE_ML_DIR);
 				System.exit(0);
-				;
 			}
 		}
 	}
@@ -104,12 +121,13 @@ public class Main {
 	}
 
 	/*-----------------------JSON-------------------------*/
-	private void convertJSONs(boolean addML, String mlDirecotoryPath)
+	private void convertJSONs(boolean addML, String mlDirecotoryPath, String outputDir, boolean convertToPrivate)
 			throws JsonParseException, JsonMappingException, IOException {
 		if (list.length == 0) {
 			System.out.println("No JSONs to be converted");
 			return;
 		}
+
 		Map<String, InstanceData> istanceDataList = new HashMap<>();
 		List<InstanceDataMultiProvider> istanceDataMultiProviderList = new ArrayList<>();
 		for (String jsonPath : list) {
@@ -124,16 +142,18 @@ public class Main {
 							.println("Not possible to add mlProfile. File not found:" + FILE_ML_DIR + "/" + mlFileName);
 				}
 			} else {
-				System.out.println("MLProfiles Not added from external directory");
+				System.out.println("MLProfiles not going to be added from external directory");
 			}
 			istanceDataList.put(jsonPath, id);
 		}
 
 		for (Map.Entry<String, InstanceData> input : istanceDataList.entrySet()) {
-			InstanceDataMultiProvider idmp = JsonMapper.ConvertJson(input.getValue(), CONVERT_TO_PRIVATE);
-			mapper.writeValue(new File(FILE_OUTPUT_DIR + "/" + input.getKey()), idmp);
+			InstanceDataMultiProvider idmp = JsonMapper.ConvertJson(input.getValue(), convertToPrivate);
+			mapper.writeValue(new File(outputDir + "/" + input.getKey()), idmp);
 			istanceDataMultiProviderList.add(idmp);
 		}
+
+		System.out.println("FINISHED");
 
 	}
 
@@ -148,6 +168,17 @@ public class Main {
 		File file = new File(FILE_ML_DIR + "/" + path);
 		JobMLProfilesMap mlProfiles = mapper.readValue(file, JobMLProfilesMap.class);
 		return mlProfiles;
+	}
+
+	private void multiConversion(boolean addMlFeatures, String fileMLDir)
+			throws JsonParseException, JsonMappingException, IOException {
+		String outputDirPrivate = FILE_INPUT_DIR + "_new_private";
+		String outputDirPublic = FILE_INPUT_DIR + "_new_public";
+		Utils.copyFolder(FILE_INPUT_DIR, outputDirPrivate);
+		Utils.copyFolder(FILE_INPUT_DIR, outputDirPublic);
+
+		convertJSONs(addMlFeatures, fileMLDir, outputDirPrivate, true);
+		convertJSONs(addMlFeatures, fileMLDir, outputDirPublic, false);
 	}
 
 	/*------------------------------------------------*/
