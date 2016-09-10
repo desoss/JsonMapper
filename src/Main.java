@@ -75,6 +75,7 @@ public class Main {
 		} catch (IOException e) {
 			System.out.println("Error with JSONs serialization!");
 		}
+		System.out.println("FINISHED");
 	}
 
 	private static void checkInputs() {
@@ -109,7 +110,7 @@ public class Main {
 			System.out.println("no files end with : " + ext);
 			return;
 		}
-
+		System.out.println("This JSONs are going to be converted");
 		for (String file : list) {
 			String temp = new StringBuffer(FILE_INPUT_DIR).append(File.separator).append(file).toString();
 			System.out.println("file : " + temp);
@@ -152,8 +153,6 @@ public class Main {
 			mapper.writeValue(new File(outputDir + "/" + input.getKey()), idmp);
 			istanceDataMultiProviderList.add(idmp);
 		}
-
-		System.out.println("FINISHED");
 
 	}
 
