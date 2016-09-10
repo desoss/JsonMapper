@@ -9,6 +9,7 @@ import java.util.Map;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.InstanceData;
@@ -18,15 +19,17 @@ import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.JobMLProfil
 public class Main {
 
 	/* EVERY INPUT JSON FILE MUST HAVE THE EXTENSION .json IN ITS NAME */
-	private static final String FILE_INPUT_DIR = "/Users/jacoporigoli/Dropbox/simulazioni/istanze-250_old";
+	private static final String FILE_INPUT_DIR = "#@INPUTFOLDERPATH@#";
+
 	private static final String FILE_TEXT_EXT = ".json";
-	private static final String FILE_OUTPUT_DIR = "/Users/jacoporigoli/Dropbox/simulazioni/istanze-250_new_public";
+	private static final String FILE_OUTPUT_DIR = "#@OUTPUTFOLDERPATH@#";
 
 	/*
 	 * Inpus JSONs are of public case, force a private case transformation by
 	 * deleting unused parameters an initialing useful ones
 	 */
 	private static final boolean CONVERT_TO_PRIVATE = false;
+	private static final boolean PRETTIFY_JSON = true;
 
 	/*
 	 * If ADD_ML_FEATURES = true, MLProfile are added from .json files contained
@@ -35,15 +38,20 @@ public class Main {
 	 * so the file should be named ID123_.json
 	 */
 	private static final boolean ADD_ML_FEATURES = true;
-	private static final String FILE_ML_DIR = "/Users/jacoporigoli/Desktop/dati_ml_renamed/R";
 
-	ObjectMapper mapper = new ObjectMapper().registerModule(new Jdk8Module());
+	private static final String FILE_ML_DIR = "#@MLFOLDERPATH@#";
+
+	static ObjectMapper mapper = new ObjectMapper().registerModule(new Jdk8Module());
 	private String[] list;
 
 	public static void main(String[] args) {
 		Main findExt = new Main();
 		checkInputs();
 		findExt.listFile(FILE_INPUT_DIR, FILE_TEXT_EXT);
+		if (PRETTIFY_JSON) {
+			mapper.enable(SerializationFeature.INDENT_OUTPUT);
+		}
+
 		try {
 			findExt.convertJSONs(ADD_ML_FEATURES, FILE_ML_DIR);
 		} catch (IOException e) {
@@ -122,7 +130,7 @@ public class Main {
 		}
 
 		for (Map.Entry<String, InstanceData> input : istanceDataList.entrySet()) {
-			InstanceDataMultiProvider idmp = JsonMapper.ConvertJson(input.getValue());
+			InstanceDataMultiProvider idmp = JsonMapper.ConvertJson(input.getValue(), CONVERT_TO_PRIVATE);
 			mapper.writeValue(new File(FILE_OUTPUT_DIR + "/" + input.getKey()), idmp);
 			istanceDataMultiProviderList.add(idmp);
 		}

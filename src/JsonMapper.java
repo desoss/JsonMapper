@@ -1,4 +1,5 @@
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,11 +19,12 @@ import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.JobProfiles
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.PrivateCloudParameters;
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.PublicCloudParameters;
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.PublicCloudParametersMap;
+import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.VMConfiguration;
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.VMConfigurationsMap;
 
 public class JsonMapper {
 
-	public static InstanceDataMultiProvider ConvertJson(InstanceData input) {
+	public static InstanceDataMultiProvider ConvertJson(InstanceData input, boolean convertToPrivate) {
 		InstanceDataMultiProvider output = new InstanceDataMultiProvider();
 
 		output.setId(input.getId());
@@ -42,8 +44,8 @@ public class JsonMapper {
 		if (input.getMapProfiles() != null && !input.getMapProfiles().isEmpty()) {
 			output.setMapJobProfiles(retrieveMapJobProfiles(input.getMapProfiles(), input.getProvider()));
 		}
-		if (input.getMapTypeVMs() != null && input.getMapTypeVMs().isPresent()
-				&& !input.getMapTypeVMs().get().isEmpty()) {
+		if (input.getMapTypeVMs() != null && input.getMapTypeVMs().isPresent() && !input.getMapTypeVMs().get().isEmpty()
+				&& !convertToPrivate) {
 			output.setMapPublicCloudParameters(
 					retrieveMapPublicCloudParameters(input.getMapTypeVMs(), input.getProvider()));
 		}
@@ -57,7 +59,9 @@ public class JsonMapper {
 				&& input.getPrivateCloudParameters().get().validate()) {
 			output.setPrivateCloudParameters(retrievePrivateCloudParameters(input.getPrivateCloudParameters()));
 		}
-
+		if (convertToPrivate) {
+			initializeMissingPrivateParameters(output);
+		}
 		return output;
 	}
 
@@ -161,4 +165,32 @@ public class JsonMapper {
 		return mapJobMLProfiles;
 	}
 
+	private static void initializeMissingPrivateParameters(InstanceDataMultiProvider input) {
+		input.setPrivateCloudParameters(getDefaultPrivateCloudParameters());
+		List<String> l = new ArrayList<String>();
+		l.addAll(input.getMapJobProfiles().getTypeVMs());
+		input.setMapVMConfigurations(getDefaultVMConfiguration(l));
+	}
+
+	private static PrivateCloudParameters getDefaultPrivateCloudParameters() {
+		PrivateCloudParameters p = new PrivateCloudParameters();
+		p.setE(0);
+		p.setM(0);
+		p.setN(0);
+		p.setV(0);
+		return p;
+	}
+
+	private static VMConfigurationsMap getDefaultVMConfiguration(List<String> lst) {
+		Map<String, VMConfiguration> map = new HashMap<>();
+		for (String s : lst) {
+			VMConfiguration c = new VMConfiguration();
+			c.setCore(0);
+			c.setMemory(0);
+			c.setProvider("inHouse");
+			c.setCost(Optional.of(0.0));
+			map.put(s, c);
+		}
+		return new VMConfigurationsMap(map);
+	}
 }
