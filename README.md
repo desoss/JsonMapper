@@ -3,14 +3,15 @@
 Before running set the parameters at the top of main class.
 Here an example is provided
 	
-	private static final String FILE_INPUT_DIR = "/Users/jacoporigoli/250/istanze-250";
+	private static final String FILE_INPUT_DIR = "/Users/chucknorris/simulations/istances-250";
+	private static final boolean COMBINE_JSONS = true; 
+	private static final boolean SINGLEFOLDERINPUT_TO_PRIVATEandPUBLICFOLDERSOUPUT = true;
 	private static final String FILE_TEXT_EXT = ".json";
-	private static final boolean SINGLEINPUT_MULTIOUTPUT = true;
-	private static final String FILE_OUTPUT_DIR = "/Users/jacoporigoli/250/istanze-250_new_public";
+	private static final String FILE_OUTPUT_DIR = "#@OUTPUTFOLDERPATH@#";
 	private static final boolean CONVERT_TO_PRIVATE = false;
 	private static final boolean PRETTIFY_JSON = true;
 	private static final boolean ADD_ML_FEATURES = true;
-	private static final String FILE_ML_DIR = "/Users/jacoporigoli/sml_renamed/R";
+	private static final String FILE_ML_DIR = "/Users/chucknorris/ml_renamed/R";
 	
 
 The whole documentations about every parameters can be found in the Main class.

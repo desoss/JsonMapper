@@ -19,7 +19,7 @@ import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.JobMLProfil
 public class Main {
 
 	/* EVERY INPUT JSON FILE MUST HAVE THE EXTENSION .json IN ITS NAME */
-	private static final String FILE_INPUT_DIR = "/Users/jacoporigoli/Desktop/PROVA/istanze-250";
+	private static final String FILE_INPUT_DIR = "#@INPUTFOLDERPATH@#";
 
 	private static final String FILE_TEXT_EXT = ".json";
 	
@@ -31,7 +31,7 @@ public class Main {
 	 * If SINGLE_FOLDER_INPUT_PRIVATEandPUBLIC_FOLDERS_OUPUT = true, private and public json in the new
 	 * format are created in the same parent directory of FILE_INPUT_DIR
 	 */
-	private static final boolean SINGLE_FOLDER_INPUT_PRIVATEandPUBLIC_FOLDERS_OUPUT = true;
+	private static final boolean SINGLEFOLDERINPUT_TO_PRIVATEandPUBLICFOLDERSOUPUT = true;
 	/*
 	 * Clearly if SINGLEINPUT_MULTIOUTPUT is set to true FILE_OUTPUT_DIR is
 	 * unnecessary
@@ -53,7 +53,7 @@ public class Main {
 	 */
 	private static final boolean ADD_ML_FEATURES = true;
 
-	private static final String FILE_ML_DIR = "/Users/jacoporigoli/Desktop/dati_ml_renamed/R";
+	private static final String FILE_ML_DIR = "#@MLFOLDERPATH@#";
 
 	static ObjectMapper mapper = new ObjectMapper().registerModule(new Jdk8Module());
 
@@ -74,7 +74,7 @@ public class Main {
 		}
 
 		try {
-			if (SINGLE_FOLDER_INPUT_PRIVATEandPUBLIC_FOLDERS_OUPUT) {
+			if (SINGLEFOLDERINPUT_TO_PRIVATEandPUBLICFOLDERSOUPUT) {
 				findExt.multiConversion(ADD_ML_FEATURES, FILE_ML_DIR);
 			} else {
 				findExt.convertJSONs(ADD_ML_FEATURES, FILE_ML_DIR, FILE_OUTPUT_DIR, CONVERT_TO_PRIVATE);
@@ -90,7 +90,7 @@ public class Main {
 			System.out.println("Directory does not exists : " + FILE_INPUT_DIR);
 			System.exit(0);
 		}
-		if (!SINGLE_FOLDER_INPUT_PRIVATEandPUBLIC_FOLDERS_OUPUT) {
+		if (!SINGLEFOLDERINPUT_TO_PRIVATEandPUBLICFOLDERSOUPUT) {
 			if (new File(FILE_OUTPUT_DIR).isDirectory() == false) {
 				System.out.println("Directory does not exists : " + FILE_OUTPUT_DIR);
 				System.exit(0);
