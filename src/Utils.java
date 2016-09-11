@@ -23,7 +23,6 @@ public class Utils {
 			}
 		}
 
-		System.out.println("Copied Folder to" + destFolder.getName());
 	}
 
 	public static void copyFolder(File src, File dest) throws IOException {
@@ -47,6 +46,13 @@ public class Utils {
 			}
 			in.close();
 			out.close();
+		}
+	}
+	
+	public static void deleteFiles(String[] filesPath){
+		for(int i=0; i<filesPath.length; i++){
+			File f = new File(filesPath[i]);
+			f.delete();
 		}
 	}
 

@@ -19,17 +19,19 @@ import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.JobMLProfil
 public class Main {
 
 	/* EVERY INPUT JSON FILE MUST HAVE THE EXTENSION .json IN ITS NAME */
-	private static final String FILE_INPUT_DIR = "#@INPUTFOLDERPATH@#";
+	private static final String FILE_INPUT_DIR = "/Users/jacoporigoli/Desktop/PROVA/istanze-250";
 
 	private static final String FILE_TEXT_EXT = ".json";
-
+	
+	private static final boolean COMBINE_JSONS = true; 
+	
 	/*
 	 * Precondition: input.json in the old format are of public case
 	 * 
-	 * If SINGLEINPUT_MULTIOUTPUT = true, private and public json in the new
+	 * If SINGLE_FOLDER_INPUT_PRIVATEandPUBLIC_FOLDERS_OUPUT = true, private and public json in the new
 	 * format are created in the same parent directory of FILE_INPUT_DIR
 	 */
-	private static final boolean SINGLEINPUT_MULTIOUTPUT = false;
+	private static final boolean SINGLE_FOLDER_INPUT_PRIVATEandPUBLIC_FOLDERS_OUPUT = true;
 	/*
 	 * Clearly if SINGLEINPUT_MULTIOUTPUT is set to true FILE_OUTPUT_DIR is
 	 * unnecessary
@@ -51,10 +53,9 @@ public class Main {
 	 */
 	private static final boolean ADD_ML_FEATURES = true;
 
-	private static final String FILE_ML_DIR = "#@MLFOLDERPATH@#";
+	private static final String FILE_ML_DIR = "/Users/jacoporigoli/Desktop/dati_ml_renamed/R";
 
 	static ObjectMapper mapper = new ObjectMapper().registerModule(new Jdk8Module());
-	private String[] list;
 
 	public static void main(String[] args) {
 		Main findExt = new Main();
@@ -64,10 +65,16 @@ public class Main {
 			mapper.enable(SerializationFeature.INDENT_OUTPUT);
 		}
 
-		findExt.listFile(FILE_INPUT_DIR, FILE_TEXT_EXT);
+		String[] list = findExt.listFile(FILE_INPUT_DIR, FILE_TEXT_EXT);
+		
+		System.out.println("These JSONs are going to be converted:");
+		for (String file : list) {
+			String temp = new StringBuffer(FILE_INPUT_DIR).append(File.separator).append(file).toString();
+			System.out.println("file : " + temp);
+		}
 
 		try {
-			if (SINGLEINPUT_MULTIOUTPUT) {
+			if (SINGLE_FOLDER_INPUT_PRIVATEandPUBLIC_FOLDERS_OUPUT) {
 				findExt.multiConversion(ADD_ML_FEATURES, FILE_ML_DIR);
 			} else {
 				findExt.convertJSONs(ADD_ML_FEATURES, FILE_ML_DIR, FILE_OUTPUT_DIR, CONVERT_TO_PRIVATE);
@@ -83,7 +90,7 @@ public class Main {
 			System.out.println("Directory does not exists : " + FILE_INPUT_DIR);
 			System.exit(0);
 		}
-		if (!SINGLEINPUT_MULTIOUTPUT) {
+		if (!SINGLE_FOLDER_INPUT_PRIVATEandPUBLIC_FOLDERS_OUPUT) {
 			if (new File(FILE_OUTPUT_DIR).isDirectory() == false) {
 				System.out.println("Directory does not exists : " + FILE_OUTPUT_DIR);
 				System.exit(0);
@@ -97,39 +104,31 @@ public class Main {
 		}
 	}
 
-	public void listFile(String folder, String ext) {
+	public String[] listFile(String folder, String ext) {
 
 		GenericExtFilter filter = new GenericExtFilter(ext);
-
 		File dirInput = new File(folder);
-
-		// list out all the file name and filter by the extension
+		
 		String[] list = dirInput.list(filter);
 
 		if (list.length == 0) {
 			System.out.println("no files end with : " + ext);
-			return;
+			return new String[0];
 		}
-		System.out.println("This JSONs are going to be converted");
-		for (String file : list) {
-			String temp = new StringBuffer(FILE_INPUT_DIR).append(File.separator).append(file).toString();
-			System.out.println("file : " + temp);
-		}
-
-		this.list = list;
-
-		return;
+		
+		return list;
 	}
 
 	/*-----------------------JSON-------------------------*/
 	private void convertJSONs(boolean addML, String mlDirecotoryPath, String outputDir, boolean convertToPrivate)
 			throws JsonParseException, JsonMappingException, IOException {
+		String[] list = listFile(FILE_INPUT_DIR, FILE_TEXT_EXT);
 		if (list.length == 0) {
 			System.out.println("No JSONs to be converted");
 			return;
 		}
 
-		Map<String, InstanceData> istanceDataList = new HashMap<>();
+		Map<String, InstanceData> istanceDataMap = new HashMap<>();
 		List<InstanceDataMultiProvider> istanceDataMultiProviderList = new ArrayList<>();
 		for (String jsonPath : list) {
 			InstanceData id = getJsonFromPath(jsonPath);
@@ -145,15 +144,34 @@ public class Main {
 			} else {
 				System.out.println("MLProfiles not going to be added from external directory");
 			}
-			istanceDataList.put(jsonPath, id);
+			istanceDataMap.put(jsonPath, id);
+		}
+		if(!COMBINE_JSONS){//MAP 1 to 1. Each old .json is converted in 1 new .json
+			for (Map.Entry<String, InstanceData> input : istanceDataMap.entrySet()) {
+				InstanceDataMultiProvider idmp = new InstanceDataMultiProvider();
+				JsonMapper.ConvertJson(input.getValue(),idmp, convertToPrivate);
+				mapper.writeValue(new File(outputDir + "/" + input.getKey()), idmp);
+				istanceDataMultiProviderList.add(idmp); //??
+			}
+		}else{//all .json in the directory are combined to create one new .json
+			
+			InstanceDataMultiProvider idmp = new InstanceDataMultiProvider();
+			JsonMapper.CombineJsons(istanceDataMap, idmp,convertToPrivate);
+		
+			Utils.deleteFiles(getJSONsAbsolutePath(outputDir));
+			mapper.writeValue(new File(outputDir + "/" + "combined.json"), idmp);//TODO
+			//TODO delete old .json in result directory
 		}
 
-		for (Map.Entry<String, InstanceData> input : istanceDataList.entrySet()) {
-			InstanceDataMultiProvider idmp = JsonMapper.ConvertJson(input.getValue(), convertToPrivate);
-			mapper.writeValue(new File(outputDir + "/" + input.getKey()), idmp);
-			istanceDataMultiProviderList.add(idmp);
+	}
+	
+	private String[] getJSONsAbsolutePath(String folder){
+		String[] outputList = listFile(folder,".json");
+		String[] outputPathList = new String[outputList.length];
+		for (int i=0; i<outputList.length;i++) {
+			outputPathList[i] = folder+"/"+outputList[i];
 		}
-
+		return outputPathList;
 	}
 
 	private InstanceData getJsonFromPath(String path) throws JsonParseException, JsonMappingException, IOException {
@@ -174,8 +192,9 @@ public class Main {
 		String outputDirPrivate = FILE_INPUT_DIR + "_new_private";
 		String outputDirPublic = FILE_INPUT_DIR + "_new_public";
 		Utils.copyFolder(FILE_INPUT_DIR, outputDirPrivate);
+		System.out.println("Result folder name: " + outputDirPrivate);
 		Utils.copyFolder(FILE_INPUT_DIR, outputDirPublic);
-
+		System.out.println("Result folder name: " + outputDirPublic);
 		convertJSONs(addMlFeatures, fileMLDir, outputDirPrivate, true);
 		convertJSONs(addMlFeatures, fileMLDir, outputDirPublic, false);
 	}
