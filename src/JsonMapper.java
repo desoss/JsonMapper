@@ -25,10 +25,10 @@ import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.VMConfigura
 
 public class JsonMapper {
 
-	public static InstanceDataMultiProvider ConvertJson(InstanceData input,InstanceDataMultiProvider output, boolean convertToPrivate) {
+	public static InstanceDataMultiProvider addInstanceDataToOutputJSON(InstanceData input,InstanceDataMultiProvider output, boolean convertToPrivate) {
 
 		output.setId(input.getId());
-
+		
 		if (input.getLstClass() != null && !input.getLstClass().isEmpty()) {
 			if(output.getMapClassParameters() == null){
 				output.setMapClassParameters(new ClassParametersMap());
@@ -77,9 +77,9 @@ public class JsonMapper {
 		return output;
 	}
 	
-	public static InstanceDataMultiProvider CombineJsons(Map<String,InstanceData> inputMap, InstanceDataMultiProvider output, boolean convertToPrivate) {
+	public static InstanceDataMultiProvider convertJSONs(Map<String,InstanceData> inputMap, InstanceDataMultiProvider output, boolean convertToPrivate) {
 		for(Map.Entry<String, InstanceData> input : inputMap.entrySet()){
-			ConvertJson(input.getValue(), output, convertToPrivate);
+			addInstanceDataToOutputJSON(input.getValue(), output, convertToPrivate);
 		}
 		return output;
 	}
@@ -88,12 +88,12 @@ public class JsonMapper {
 		for (JobClass jobClass : lstClass) {
 			ClassParameters cp = new ClassParameters();
 			cp.setD(jobClass.getD());
-			cp.setHlow(jobClass.getHlow());
-			cp.setHup(jobClass.getHup());
+			cp.setHlow(1);//cp.setHlow(jobClass.getHlow());   //TODO CARE
+			cp.setHup(1);//cp.setHup(jobClass.getHup());  	  //TODO CARE
 			cp.setPenalty(jobClass.getJob_penalty());
 			cp.setThink(jobClass.getThink());
-			cp.setM(jobClass.getM());
-			cp.setV(jobClass.getV());
+			cp.setM(6);//cp.setM(jobClass.getM());  //CINECA 5x  6 TODO
+			cp.setV(0); //cp.setV(jobClass.getV());  //CINECA 5x 0 TODO
 			if(mapClassParameters.containsKey(jobClass.getId())){
 					System.out.println("Multiple ClassParameters with ID: "+jobClass.getId());
 			}else{
@@ -216,6 +216,9 @@ public class JsonMapper {
 		return new JobMLProfilesMap(map);
 	}
 
+	/*
+	 * DEFAULT Private CLOUD Params
+	 */
 	private static void initializeMissingPrivateParameters(InstanceDataMultiProvider input) {
 		input.setPrivateCloudParameters(getDefaultPrivateCloudParameters());
 		List<String> l = new ArrayList<String>();
@@ -225,10 +228,10 @@ public class JsonMapper {
 
 	private static PrivateCloudParameters getDefaultPrivateCloudParameters() {
 		PrivateCloudParameters p = new PrivateCloudParameters();
-		p.setE(0);
-		p.setM(0);
-		p.setN(0);
-		p.setV(0);
+		p.setE(0.963585);    //CINECA 5xlarge rho_bar*1.15: 0.8379*1.15 = 0.963585 TODO
+		p.setM(120); //CINECA 5xlarge 120GB TODO
+		p.setN(4);  //CINECA 5xlarge [4,6] TODO
+		p.setV(20); //CINECA 5xlarge 20vCPU TODO
 		return p;
 	}
 
@@ -236,10 +239,10 @@ public class JsonMapper {
 		Map<String, VMConfiguration> map = new HashMap<>();
 		for (String s : lst) {
 			VMConfiguration c = new VMConfiguration();
-			c.setCore(0);
-			c.setMemory(0);
+			c.setCore(20);	//CINECA 5xlarge 20vCPU
+			c.setMemory(120); //CINECA 5xlarge 120GB
 			c.setProvider("inHouse");
-			c.setCost(Optional.of(0.0));
+			c.setCost(Optional.of(0.963585)); //<- FIX CINECA 5xlarge rho_bar*1.15: 0.8379*1.15 = 0.963585
 			map.put(s, c);
 		}
 		return new VMConfigurationsMap(map);

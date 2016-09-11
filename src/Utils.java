@@ -6,7 +6,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class Utils {
-
+	
+	public static void createFolders(String path){
+		new File(path).mkdirs();
+	}
+	
 	public static void copyFolder(String src, String dest) {
 		File srcFolder = new File(src);
 		File destFolder = new File(dest);
@@ -48,11 +52,20 @@ public class Utils {
 			out.close();
 		}
 	}
-	
-	public static void deleteFiles(String[] filesPath){
-		for(int i=0; i<filesPath.length; i++){
+
+	public static void deleteFiles(String[] filesPath) {
+		for (int i = 0; i < filesPath.length; i++) {
 			File f = new File(filesPath[i]);
 			f.delete();
+		}
+	}
+
+	public static int factorial(int n) {
+		if (n == 0)
+			return 1;
+		else {
+			int result = n * factorial(n - 1);
+			return result;
 		}
 	}
 
