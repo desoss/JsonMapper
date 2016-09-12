@@ -118,20 +118,23 @@ public class Main {
 					insDat = getJsonFromInputDirectory(name);
 				
 				for (Map.Entry<TypeVMJobClassKey, Profile> entry : insDat.getMapProfiles().entrySet()) {
-					String mapTxt = txtName+"MapJ"+entry.getKey().getJob()+entry.getKey().getTypeVM()+".txt";
-					String rsTxt = txtName+"RSJ"+entry.getKey().getJob()+entry.getKey().getTypeVM()+".txt";
+					String oldMapTxt = txtName+"MapJ"+entry.getKey().getJob()+entry.getKey().getTypeVM()+".txt";
+					String oldRsTxt = txtName+"RSJ"+entry.getKey().getJob()+entry.getKey().getTypeVM()+".txt";
+					
+					String newMapTxt = combination.getId()+"MapJ"+entry.getKey().getJob()+entry.getKey().getTypeVM()+".txt";
+					String newRsTxt =  combination.getId()+"RSJ"+entry.getKey().getJob()+entry.getKey().getTypeVM()+".txt";
 					try{
-						Files.copy(Paths.get(FILE_INPUT_DIR + File.separator + mapTxt), Paths.get(resultDir + File.separator + mapTxt));
+						Files.copy(Paths.get(FILE_INPUT_DIR + File.separator + oldMapTxt), Paths.get(resultDir + File.separator + newMapTxt));
 					}catch(Exception exception){
-						System.out.println("Not Possible to copy file from "+FILE_INPUT_DIR + File.separator + mapTxt);
-						System.out.println("To "+resultDir + File.separator + mapTxt);
+						System.out.println("Not Possible to copy file from "+FILE_INPUT_DIR + File.separator + oldMapTxt);
+						System.out.println("To "+resultDir + File.separator + newMapTxt);
 						System.out.println(exception);
 					}
 					try{
-						Files.copy(Paths.get(FILE_INPUT_DIR + File.separator + rsTxt), Paths.get(resultDir + File.separator + rsTxt));
+						Files.copy(Paths.get(FILE_INPUT_DIR + File.separator + oldRsTxt), Paths.get(resultDir + File.separator + newRsTxt));
 					}catch(Exception exception){
-						System.out.println("Not Possible to copy file from "+FILE_INPUT_DIR + File.separator + rsTxt);
-						System.out.println("To "+resultDir + File.separator + rsTxt);
+						System.out.println("Not Possible to copy file from "+FILE_INPUT_DIR + File.separator + oldRsTxt);
+						System.out.println("To "+resultDir + File.separator + newRsTxt);
 						System.out.println(exception);
 					}
 				}
@@ -142,6 +145,16 @@ public class Main {
 		}
 	}
 
+//	private String getNewTxtName(String oldTxtName, String id){
+//		String[] newTxtParts = oldTxtName.split("_");
+//		String newTxtName = new String();
+//		newTxtName = id.split("_")[0] + "_";
+//		for(int i=1;i<newTxtParts.length;i++){
+//			newTxtName = 
+//		}
+//		return newTxtName;
+//	}
+	
 	private List<Combination> getAllPossibleCombinations(ArrayList<String> inputs, List<Combination> outputs) {
 
 		if (inputs.size() != 0) {

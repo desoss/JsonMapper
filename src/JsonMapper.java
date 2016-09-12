@@ -27,7 +27,6 @@ public class JsonMapper {
 
 	public static InstanceDataMultiProvider addInstanceDataToOutputJSON(InstanceData input,InstanceDataMultiProvider output, boolean convertToPrivate) {
 
-		output.setId(input.getId());
 		
 		if (input.getLstClass() != null && !input.getLstClass().isEmpty()) {
 			if(output.getMapClassParameters() == null){
