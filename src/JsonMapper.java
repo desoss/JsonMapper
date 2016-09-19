@@ -100,6 +100,7 @@ public class JsonMapper {
 		    }
 			mapJobIds.put(jobIDs.getKey(), mapProviders);
 		}
+		output.setMapJobProfiles(new JobProfilesMap(mapJobIds));
 	}
 
 	public static InstanceDataMultiProvider convertJSONs(Map<String,InstanceData_old> inputMap, InstanceDataMultiProvider output, boolean convertToPrivate) {
