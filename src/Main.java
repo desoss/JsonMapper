@@ -15,9 +15,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
-import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.InstanceData;
-import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.Profile;
-import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.TypeVMJobClassKey;
+import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.old.InstanceData_old;
+import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.old.Profile_old;
+import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.old.TypeVMJobClassKey_old;
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.InstanceDataMultiProvider;
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.JobMLProfilesMap;
 
@@ -25,8 +25,11 @@ import org.apache.commons.io.FilenameUtils;
 
 public class Main {
 
+	//TODO datasize
+	
+	
 	/* EVERY INPUT JSON FILE MUST HAVE THE EXTENSION .json IN ITS NAME */
-	private static final String FILE_INPUT_DIR = "/Users/jacoporigoli/Desktop/PROVA/istanze-250";
+	private static final String FILE_INPUT_DIR = "/Users/jacoporigoli/Desktop/FUCKYES/istanze-250";
 
 	private static final String FILE_EXT = ".json";
 
@@ -43,8 +46,12 @@ public class Main {
 	 * so the file should be named ID123_.json
 	 */
 	private static final boolean ADD_ML_FEATURES = true;
+	public static final String PRIVATE_PROVIDER_NAME = "inHouse";
+	public static final double DATASIZE = 250.0; //[GB]
 
 	private static final String FILE_ML_DIR = "/Users/jacoporigoli/Desktop/dati_ml_renamed/R";
+	
+	
 
 	static ObjectMapper mapper = new ObjectMapper().registerModule(new Jdk8Module());
 
@@ -113,11 +120,11 @@ public class Main {
 			Utils.createFolders(resultDir);
 			for (String name : combination.getInputList()) {
 				String txtName = FilenameUtils.removeExtension(name);
-				InstanceData insDat;
+				InstanceData_old insDat;
 				try {
 					insDat = getJsonFromInputDirectory(name);
 				
-				for (Map.Entry<TypeVMJobClassKey, Profile> entry : insDat.getMapProfiles().entrySet()) {
+				for (Map.Entry<TypeVMJobClassKey_old, Profile_old> entry : insDat.getMapProfiles().entrySet()) {
 					String oldMapTxt = txtName+"MapJ"+entry.getKey().getJob()+entry.getKey().getTypeVM()+".txt";
 					String oldRsTxt = txtName+"RSJ"+entry.getKey().getJob()+entry.getKey().getTypeVM()+".txt";
 					
@@ -181,11 +188,11 @@ public class Main {
 		return parts[0];
 	}
 
-	private Map<String, InstanceData> getInstanceData(String[] paths, boolean addML)
+	private Map<String, InstanceData_old> getInstanceData(String[] paths, boolean addML)
 			throws JsonParseException, JsonMappingException, IOException {
-		Map<String, InstanceData> istanceDataMap = new HashMap<>();
+		Map<String, InstanceData_old> istanceDataMap = new HashMap<>();
 		for (String jsonPath : paths) {
-			InstanceData id = getJsonFromInputDirectory(jsonPath);
+			InstanceData_old id = getJsonFromInputDirectory(jsonPath);
 			if (addML) {
 				String mlFileName = jsonPath.split("_")[0] + ".json";
 				File f = new File(FILE_ML_DIR + "/" + mlFileName);
@@ -217,7 +224,7 @@ public class Main {
 	private void convertJSONs(String id,String[] list, boolean addML, String mlDirecotoryPath, String outputDir, boolean privateCase)
 			throws JsonParseException, JsonMappingException, IOException {
 
-		Map<String, InstanceData> istanceDataMap = getInstanceData(list, addML);
+		Map<String, InstanceData_old> istanceDataMap = getInstanceData(list, addML);
 		InstanceDataMultiProvider idmp = new InstanceDataMultiProvider();
 		idmp.setId(id);
 		JsonMapper.convertJSONs(istanceDataMap, idmp, privateCase);
@@ -237,9 +244,9 @@ public class Main {
 		return outputPathList;
 	}
 
-	private InstanceData getJsonFromInputDirectory(String filename) throws JsonParseException, JsonMappingException, IOException {
+	private InstanceData_old getJsonFromInputDirectory(String filename) throws JsonParseException, JsonMappingException, IOException {
 		File file = new File(FILE_INPUT_DIR + "/" + filename);
-		InstanceData instanceData = mapper.readValue(file, InstanceData.class);
+		InstanceData_old instanceData = mapper.readValue(file, InstanceData_old.class);
 		return instanceData;
 	}
 

@@ -5,11 +5,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.InstanceData;
-import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.JobClass;
-import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.Profile;
-import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.TypeVM;
-import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.TypeVMJobClassKey;
+import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.old.InstanceData_old;
+import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.old.JobClass_old;
+import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.old.Profile_old;
+import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.old.TypeVMJobClassKey_old;
+import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.old.TypeVM_old;
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.ClassParameters;
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.ClassParametersMap;
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.InstanceDataMultiProvider;
@@ -25,8 +25,7 @@ import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.VMConfigura
 
 public class JsonMapper {
 
-	public static InstanceDataMultiProvider addInstanceDataToOutputJSON(InstanceData input,InstanceDataMultiProvider output, boolean convertToPrivate) {
-
+	public static InstanceDataMultiProvider addInstanceDataToOutputJSON(InstanceData_old input,InstanceDataMultiProvider output, boolean convertToPrivate) {
 		
 		if (input.getLstClass() != null && !input.getLstClass().isEmpty()) {
 			if(output.getMapClassParameters() == null){
@@ -72,19 +71,46 @@ public class JsonMapper {
 		}
 		if (convertToPrivate) {
 			initializeMissingPrivateParameters(output);
+			convertProvider(output);
 		}
 		return output;
 	}
 	
-	public static InstanceDataMultiProvider convertJSONs(Map<String,InstanceData> inputMap, InstanceDataMultiProvider output, boolean convertToPrivate) {
-		for(Map.Entry<String, InstanceData> input : inputMap.entrySet()){
+	/**
+	 * override providers names in all the right maps 
+	 */
+	private static void convertProvider(InstanceDataMultiProvider output) {
+		for(VMConfiguration entry : output.getMapVMConfigurations().getMapVMConfigurations().values()){
+			entry.setProvider(Main.PRIVATE_PROVIDER_NAME);
+		}
+		Map<String, Map<String, Map<String, JobProfile>>> mapJobIds = new HashMap<>();
+		for (Map.Entry<String, Map<String, Map<String, JobProfile>>> jobIDs : output.getMapJobProfiles().getMapJobProfile().entrySet()) {
+			Map<String, Map<String, JobProfile>> mapProviders = new HashMap<>();
+		    
+			for (Map.Entry<String, Map<String, JobProfile>> providers : jobIDs.getValue().entrySet()) {
+				Map<String, JobProfile> mapTypeVMs = new HashMap<>();
+		    	for (Map.Entry<String, JobProfile> typeVMs : providers.getValue().entrySet()) {
+		    		if(mapTypeVMs.containsKey(Main.PRIVATE_PROVIDER_NAME)){
+			    		System.out.println("Multiple typeVM ("+typeVMs.getKey()+") of different providers. "+providers.getKey()+" "+typeVMs.getKey()+" rejected. Rename typeVM!");//TODO posso appendere stringa del provider
+			    	}else{
+			    		mapTypeVMs.put(typeVMs.getKey(), typeVMs.getValue());
+			    	}
+		    	}
+		    	mapProviders.put(Main.PRIVATE_PROVIDER_NAME, mapTypeVMs);
+		    }
+			mapJobIds.put(jobIDs.getKey(), mapProviders);
+		}
+	}
+
+	public static InstanceDataMultiProvider convertJSONs(Map<String,InstanceData_old> inputMap, InstanceDataMultiProvider output, boolean convertToPrivate) {
+		for(Map.Entry<String, InstanceData_old> input : inputMap.entrySet()){
 			addInstanceDataToOutputJSON(input.getValue(), output, convertToPrivate);
 		}
 		return output;
 	}
 
-	private static ClassParametersMap retrieveMapClassParameters(Map<String,ClassParameters> mapClassParameters,List<JobClass> lstClass) {
-		for (JobClass jobClass : lstClass) {
+	private static ClassParametersMap retrieveMapClassParameters(Map<String,ClassParameters> mapClassParameters,List<JobClass_old> list) {
+		for (JobClass_old jobClass : list) {
 			ClassParameters cp = new ClassParameters();
 			cp.setD(jobClass.getD());
 			cp.setHlow(1);//cp.setHlow(jobClass.getHlow());   //TODO CARE
@@ -101,25 +127,26 @@ public class JsonMapper {
 		}
 		return new ClassParametersMap(mapClassParameters);
 	}
-
-	private static JobProfilesMap retrieveMapJobProfiles(Map<String, Map<String, Map<String, JobProfile>>> mapJobProfiles, Map<TypeVMJobClassKey, Profile> mapProfiles, String provider) {
+	
+	private static JobProfilesMap retrieveMapJobProfiles(Map<String, Map<String, Map<String, JobProfile>>> mapJobProfiles, Map<TypeVMJobClassKey_old, Profile_old> mapProfiles, String provider) {
 		if(mapJobProfiles==null){
 			mapJobProfiles = new HashMap<>();
 		}
-		for (Map.Entry<TypeVMJobClassKey, Profile> entry : mapProfiles.entrySet()) {
+		for (Map.Entry<TypeVMJobClassKey_old, Profile_old> entry : mapProfiles.entrySet()) {
 			JobProfile p = new JobProfile();
 
-			p.setNm(entry.getValue().getNm());
-			p.setNr(entry.getValue().getNr());
-			p.setCm(entry.getValue().getCm());
-			p.setCr(entry.getValue().getCr());
-			p.setMavg(entry.getValue().getMavg());
-			p.setMmax(entry.getValue().getMmax());
-			p.setRavg(entry.getValue().getRavg());
-			p.setRmax(entry.getValue().getRmax());
-			p.setSh1max(entry.getValue().getSh1max());
-			p.setShtypavg(entry.getValue().getShtypavg());
-			p.setShtypmax(entry.getValue().getShtypmax());
+			p.put("nm",entry.getValue().getNm());
+			p.put("nr",entry.getValue().getNr());
+			p.put("nm",entry.getValue().getCm());
+			p.put("cr",entry.getValue().getCr());
+			p.put("mavg",entry.getValue().getMavg());
+			p.put("mmax",entry.getValue().getMmax());
+			p.put("ravg",entry.getValue().getRavg());
+			p.put("rmax",entry.getValue().getRmax());
+			p.put("sh1max",entry.getValue().getSh1max());
+			p.put("shtypavg",entry.getValue().getShtypavg());
+			p.put("shtypmax",entry.getValue().getShtypmax());
+			p.put("datasize", Main.DATASIZE);
 
 			if (mapJobProfiles.containsKey(entry.getKey().getJob())) {
 				if (mapJobProfiles.get(entry.getKey().getJob()).containsKey(provider)) {
@@ -144,16 +171,17 @@ public class JsonMapper {
 		return new JobProfilesMap(mapJobProfiles);
 	}
 
+
 	private static PublicCloudParametersMap retrieveMapPublicCloudParameters(
-			Map<String, Map<String, Map<String, PublicCloudParameters>>> mapPublicCloudParameters, Optional<Map<String, List<TypeVM>>> mapTypeVMsO, String provider) {
-		Map<String, List<TypeVM>> mapTypeVMs = mapTypeVMsO.get();
+			Map<String, Map<String, Map<String, PublicCloudParameters>>> mapPublicCloudParameters, Optional<Map<String, List<TypeVM_old>>> optional, String provider) {
+		Map<String, List<TypeVM_old>> mapTypeVMs = optional.get();
 
 		if(mapPublicCloudParameters==null){
 			mapPublicCloudParameters = new HashMap<>();
 		}
 		
-		for (Map.Entry<String, List<TypeVM>> mapEntry : mapTypeVMs.entrySet()) {
-			for (TypeVM lstEntry : mapEntry.getValue()) {
+		for (Map.Entry<String, List<TypeVM_old>> mapEntry : mapTypeVMs.entrySet()) {
+			for (TypeVM_old lstEntry : mapEntry.getValue()) {
 
 				PublicCloudParameters p = new PublicCloudParameters();
 				p.setEta(lstEntry.getEta());
