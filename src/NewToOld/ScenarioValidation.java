@@ -1,6 +1,6 @@
 package NewToOld;
 
-import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.InstanceData;
+import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.old.InstanceData_old;
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.InstanceDataMultiProvider;
 import it.polimi.diceH2020.SPACE4Cloud.shared.settings.Scenarios;
 
@@ -74,7 +74,7 @@ public class ScenarioValidation {
 		return "ok";
 	}
 
-	public String scenarioValidation(InstanceData instanceData, Scenarios scenario){
+	public String scenarioValidation(InstanceData_old instanceData, Scenarios scenario){
 		String returnString = new String();
 		if(instanceData.getLstClass()==null || instanceData.getMapProfiles() == null){
 			returnString = "Json is missing some required parameters(MapJobProfiles or MapClassParameters)!";

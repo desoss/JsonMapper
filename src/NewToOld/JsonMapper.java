@@ -15,17 +15,23 @@ limitations under the License.
 */
 package NewToOld;
 
-import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.*;
+import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.old.InstanceData_old;
+import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.old.JobClass_old;
+import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.old.Profile_old;
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.*;
 import it.polimi.diceH2020.SPACE4Cloud.shared.settings.Scenarios;
 
 import java.util.*;
 import java.util.Map.Entry;
 
+/**
+ * from InstanceData_old to InstanceDataMultiProvider 
+ * COMPLETE WITH REFLECTION BEFORE INTEGRETING
+ */
 public class JsonMapper {
 
-	public static List<InstanceData> getInstanceDataList(InstanceDataMultiProvider instanceDataMultiProvider, Scenarios scenario){
-		List<InstanceData> instanceDataList = new ArrayList<>();
+	public static List<InstanceData_old> getInstanceDataList(InstanceDataMultiProvider instanceDataMultiProvider, Scenarios scenario){
+		List<InstanceData_old> instanceDataList = new ArrayList<>();
 
 		switch(scenario){
 			case PrivateAdmissionControl:
@@ -51,10 +57,10 @@ public class JsonMapper {
 		return instanceDataList;
 	}
 
-	private static List<InstanceData> buildInstanceDataPrAvg(InstanceDataMultiProvider instanceDataMultiProvider){
-		List<InstanceData> instanceDataList = new ArrayList<InstanceData>();
+	private static List<InstanceData_old> buildInstanceDataPrAvg(InstanceDataMultiProvider instanceDataMultiProvider){
+		List<InstanceData_old> instanceDataList = new ArrayList<InstanceData_old>();
 		for(String provider : instanceDataMultiProvider.getProvidersList()){ //useless loop, used for compliance 
-			InstanceData instanceData = buildPartialInput(instanceDataMultiProvider,provider);
+			InstanceData_old instanceData = buildPartialInput(instanceDataMultiProvider,provider);
 			instanceData.setScenario(Optional.of(Scenarios.PrivateNoAdmissionControl));
 			instanceData.setMapVMConfigurations(Optional.of(instanceDataMultiProvider.getMapVMConfigurations()));
 			instanceDataList.add(instanceData);
@@ -62,11 +68,11 @@ public class JsonMapper {
 		return instanceDataList;
 	}
 
-	private static List<InstanceData> buildInstanceDataPrPeak(InstanceDataMultiProvider instanceDataMultiProvider){
-		List<InstanceData> instanceDataList = new ArrayList<InstanceData>();
+	private static List<InstanceData_old> buildInstanceDataPrPeak(InstanceDataMultiProvider instanceDataMultiProvider){
+		List<InstanceData_old> instanceDataList = new ArrayList<InstanceData_old>();
 
 		for(String provider : instanceDataMultiProvider.getProvidersList()){ //useless loop, used for compliance 
-			InstanceData instanceData = buildPartialInput(instanceDataMultiProvider,provider);
+			InstanceData_old instanceData = buildPartialInput(instanceDataMultiProvider,provider);
 			instanceData.setScenario(Optional.of(Scenarios.PrivateAdmissionControl));
 			instanceData.setMapVMConfigurations(Optional.of(instanceDataMultiProvider.getMapVMConfigurations()));
 			instanceData.setPrivateCloudParameters(Optional.of(instanceDataMultiProvider.getPrivateCloudParameters()));
@@ -75,11 +81,11 @@ public class JsonMapper {
 		return instanceDataList;
 	}
 
-	private static List<InstanceData> buildInstanceDataPrPeakWithPhysicalAssignment(InstanceDataMultiProvider instanceDataMultiProvider){
-		List<InstanceData> instanceDataList = new ArrayList<InstanceData>();
+	private static List<InstanceData_old> buildInstanceDataPrPeakWithPhysicalAssignment(InstanceDataMultiProvider instanceDataMultiProvider){
+		List<InstanceData_old> instanceDataList = new ArrayList<InstanceData_old>();
 
 		for(String provider : instanceDataMultiProvider.getProvidersList()){ //useless loop, used for compliance 
-			InstanceData instanceData = buildPartialInput(instanceDataMultiProvider,provider);
+			InstanceData_old instanceData = buildPartialInput(instanceDataMultiProvider,provider);
 			instanceData.setScenario(Optional.of(Scenarios.PrivateAdmissionControlWithPhysicalAssignment));
 			instanceData.setMapVMConfigurations(Optional.of(instanceDataMultiProvider.getMapVMConfigurations()));
 			instanceData.setPrivateCloudParameters(Optional.of(instanceDataMultiProvider.getPrivateCloudParameters()));
@@ -88,20 +94,20 @@ public class JsonMapper {
 		return instanceDataList;
 	}
 
-	private static List<InstanceData> buildInstanceDataPuAvg(InstanceDataMultiProvider instanceDataMultiProvider){
-		List<InstanceData> instanceDataList = new ArrayList<InstanceData>();
+	private static List<InstanceData_old> buildInstanceDataPuAvg(InstanceDataMultiProvider instanceDataMultiProvider){
+		List<InstanceData_old> instanceDataList = new ArrayList<InstanceData_old>();
 		for(String provider : instanceDataMultiProvider.getProvidersList()){
-			InstanceData instanceData = buildPartialInput(instanceDataMultiProvider,provider);
+			InstanceData_old instanceData = buildPartialInput(instanceDataMultiProvider,provider);
 			instanceData.setScenario(Optional.of(Scenarios.PublicAvgWorkLoad));
 			instanceDataList.add(instanceData);
 		}
 		return instanceDataList;
 	}
 
-	private static List<InstanceData> buildInstanceDataPuPeak(InstanceDataMultiProvider instanceDataMultiProvider){
-		List<InstanceData> instanceDataList = new ArrayList<InstanceData>();
+	private static List<InstanceData_old> buildInstanceDataPuPeak(InstanceDataMultiProvider instanceDataMultiProvider){
+		List<InstanceData_old> instanceDataList = new ArrayList<InstanceData_old>();
 		for(String provider : instanceDataMultiProvider.getProvidersList()){
-			InstanceData instanceData = buildPartialInput(instanceDataMultiProvider,provider);
+			InstanceData_old instanceData = buildPartialInput(instanceDataMultiProvider,provider);
 			instanceData.setScenario(Optional.of(Scenarios.PublicPeakWorkload));
 			instanceData.setMapTypeVMs(Optional.of(fromMapPublicCloudParametersToMapTypeVMs(instanceDataMultiProvider.getMapPublicCloudParameters(), provider)));
 			instanceDataList.add(instanceData);
@@ -118,12 +124,12 @@ public class JsonMapper {
 	 * @param input
 	 * @return InstanceData with an initial set of parameters, those ones that are mandatory
 	 */
-	private static InstanceData buildPartialInput(InstanceDataMultiProvider input, String provider){
+	private static InstanceData_old buildPartialInput(InstanceDataMultiProvider input, String provider){
 
-		List<JobClass> lstClasses = fromMapClassParametersToLstClass(input.getMapClassParameters());
-		Map<TypeVMJobClassKey, Profile> map = fromMapJobProfileToMapProfiles(input.getMapJobProfiles(), provider);
+		List<JobClass_old> lstClasses = fromMapClassParametersToLstClass(input.getMapClassParameters());
+		Map<TypeVMJobClassKey, Profile_old> map = fromMapJobProfileToMapProfiles(input.getMapJobProfiles(), provider);
 
-		InstanceData partialInput = new InstanceData();
+		InstanceData_old partialInput = new InstanceData_old();
 
 		partialInput.setId(input.getId());
 		partialInput.setGamma(1500);
@@ -135,11 +141,11 @@ public class JsonMapper {
 		return partialInput;
 	}
 
-	private static List<JobClass> fromMapClassParametersToLstClass(ClassParametersMap input){
-		List<JobClass> lstClasses = new ArrayList<>();
+	private static List<JobClass_old> fromMapClassParametersToLstClass(ClassParametersMap input){
+		List<JobClass_old> lstClasses = new ArrayList<>();
 
 		for (Map.Entry<String, ClassParameters> entry : input.getMapClassParameters().entrySet()) {
-			JobClass jc = new JobClass();
+			JobClass_old jc = new JobClass_old();
 
 			jc.setD(entry.getValue().getD());
 			jc.setHlow(entry.getValue().getHlow());
@@ -156,20 +162,21 @@ public class JsonMapper {
 		return lstClasses;
 	}
 
-	private static Map<TypeVMJobClassKey, Profile> fromMapJobProfileToMapProfiles(JobProfilesMap input, String provider){
-		Map<TypeVMJobClassKey, Profile> map = new HashMap<TypeVMJobClassKey, Profile>();
+	private static Map<TypeVMJobClassKey, Profile_old> fromMapJobProfileToMapProfiles(JobProfilesMap input, String provider){
+		Map<TypeVMJobClassKey, Profile_old> map = new HashMap<TypeVMJobClassKey, Profile_old>();
 
 		for (Entry<String, Map<String, JobProfile>> jobIDs : input.get_IdVMTypes_Map(provider).entrySet()) {
 			for (Map.Entry<String, JobProfile> typeVMs : jobIDs.getValue().entrySet()) {
 				TypeVMJobClassKey key = new TypeVMJobClassKey();
-				Profile p = new Profile();
+				Profile_old p = new Profile_old();
 
 				key.setJob(jobIDs.getKey());
 				key.setTypeVM(typeVMs.getKey());
 				
-				for(Map.Entry<String, Double> profileFeature : typeVMs.getValue().getProfileMap().entrySet()){
-					p.put(profileFeature.getKey(), profileFeature.getValue());
-				}
+//					//TODO introspection reflection COMPLETE BEFORE INTEGRATING
+//				for(Map.Entry<String, Double> profileFeature : typeVMs.getValue().getProfileMap().entrySet()){
+//					p.put(profileFeature.getKey(), profileFeature.getValue());
+//				}
 
 				map.put(key, p);
 			}

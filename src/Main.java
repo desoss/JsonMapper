@@ -17,9 +17,9 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.old.InstanceData_old;
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.old.Profile_old;
-import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.old.TypeVMJobClassKey_old;
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.InstanceDataMultiProvider;
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.JobMLProfilesMap;
+import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.TypeVMJobClassKey;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -124,7 +124,7 @@ public class Main {
 				try {
 					insDat = getJsonFromInputDirectory(name);
 				
-				for (Map.Entry<TypeVMJobClassKey_old, Profile_old> entry : insDat.getMapProfiles().entrySet()) {
+				for (Map.Entry<TypeVMJobClassKey, Profile_old> entry : insDat.getMapProfiles().entrySet()) {
 					String oldMapTxt = txtName+"MapJ"+entry.getKey().getJob()+entry.getKey().getTypeVM()+".txt";
 					String oldRsTxt = txtName+"RSJ"+entry.getKey().getJob()+entry.getKey().getTypeVM()+".txt";
 					

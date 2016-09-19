@@ -8,8 +8,6 @@ import java.util.Optional;
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.old.InstanceData_old;
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.old.JobClass_old;
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.old.Profile_old;
-import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.old.TypeVMJobClassKey_old;
-import it.polimi.diceH2020.SPACE4Cloud.shared.inputData.old.TypeVM_old;
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.ClassParameters;
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.ClassParametersMap;
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.InstanceDataMultiProvider;
@@ -20,6 +18,8 @@ import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.JobProfiles
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.PrivateCloudParameters;
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.PublicCloudParameters;
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.PublicCloudParametersMap;
+import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.TypeVM;
+import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.TypeVMJobClassKey;
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.VMConfiguration;
 import it.polimi.diceH2020.SPACE4Cloud.shared.inputDataMultiProvider.VMConfigurationsMap;
 
@@ -128,11 +128,11 @@ public class JsonMapper {
 		return new ClassParametersMap(mapClassParameters);
 	}
 	
-	private static JobProfilesMap retrieveMapJobProfiles(Map<String, Map<String, Map<String, JobProfile>>> mapJobProfiles, Map<TypeVMJobClassKey_old, Profile_old> mapProfiles, String provider) {
+	private static JobProfilesMap retrieveMapJobProfiles(Map<String, Map<String, Map<String, JobProfile>>> mapJobProfiles, Map<TypeVMJobClassKey, Profile_old> mapProfiles, String provider) {
 		if(mapJobProfiles==null){
 			mapJobProfiles = new HashMap<>();
 		}
-		for (Map.Entry<TypeVMJobClassKey_old, Profile_old> entry : mapProfiles.entrySet()) {
+		for (Map.Entry<TypeVMJobClassKey, Profile_old> entry : mapProfiles.entrySet()) {
 			JobProfile p = new JobProfile();
 
 			p.put("nm",entry.getValue().getNm());
@@ -173,15 +173,15 @@ public class JsonMapper {
 
 
 	private static PublicCloudParametersMap retrieveMapPublicCloudParameters(
-			Map<String, Map<String, Map<String, PublicCloudParameters>>> mapPublicCloudParameters, Optional<Map<String, List<TypeVM_old>>> optional, String provider) {
-		Map<String, List<TypeVM_old>> mapTypeVMs = optional.get();
+			Map<String, Map<String, Map<String, PublicCloudParameters>>> mapPublicCloudParameters, Optional<Map<String, List<TypeVM>>> optional, String provider) {
+		Map<String, List<TypeVM>> mapTypeVMs = optional.get();
 
 		if(mapPublicCloudParameters==null){
 			mapPublicCloudParameters = new HashMap<>();
 		}
 		
-		for (Map.Entry<String, List<TypeVM_old>> mapEntry : mapTypeVMs.entrySet()) {
-			for (TypeVM_old lstEntry : mapEntry.getValue()) {
+		for (Map.Entry<String, List<TypeVM>> mapEntry : mapTypeVMs.entrySet()) {
+			for (TypeVM lstEntry : mapEntry.getValue()) {
 
 				PublicCloudParameters p = new PublicCloudParameters();
 				p.setEta(lstEntry.getEta());
