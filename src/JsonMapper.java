@@ -138,8 +138,6 @@ public class JsonMapper {
 
 			p.put("nm",entry.getValue().getNm());
 			p.put("nr",entry.getValue().getNr());
-			p.put("nm",entry.getValue().getCm());
-			p.put("cr",entry.getValue().getCr());
 			p.put("mavg",entry.getValue().getMavg());
 			p.put("mmax",entry.getValue().getMmax());
 			p.put("ravg",entry.getValue().getRavg());
